@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"e-library/models"
-	"e-library/repository"
+	"e-library/internal/models"
+	"e-library/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type LibraryHandler struct {
-	Repo repository.LibraryRepository
+	Service *service.LibraryService
 }
 
 // Create a private helper to handle the repetitive request binding logic
@@ -28,7 +28,7 @@ func (h *LibraryHandler) GetBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title parameter is required"})
 		return
 	}
-	book, err := h.Repo.GetBook(title)
+	book, err := h.Service.GetBook(title)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -42,7 +42,7 @@ func (h *LibraryHandler) BorrowBook(c *gin.Context) {
 		return
 	}
 
-	loan, err := h.Repo.BorrowBook(input.NameOfBorrower, input.BookTitle)
+	loan, err := h.Service.BorrowBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -56,7 +56,7 @@ func (h *LibraryHandler) ExtendLoan(c *gin.Context) {
 		return
 	}
 
-	loan, err := h.Repo.ExtendLoan(input.NameOfBorrower, input.BookTitle)
+	loan, err := h.Service.ExtendLoan(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -70,7 +70,7 @@ func (h *LibraryHandler) ReturnBook(c *gin.Context) {
 		return
 	}
 
-	err := h.Repo.ReturnBook(input.NameOfBorrower, input.BookTitle)
+	err := h.Service.ReturnBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

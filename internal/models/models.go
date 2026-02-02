@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type BookDetail struct {
 	Title           string `json:"title" binding:"required"`

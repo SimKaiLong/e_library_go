@@ -21,5 +21,5 @@ A simple e-book loan management system built with Go.
 ## 📖 API Documentation
 - **GET /Book?title=...** : Detail & Availability
 - **POST /Borrow** : {name, title} -> 28-day loan
-- **POST /Extend** : {name, title} -> +21 days
+- **POST /Extend** : {name, title} -> +21 extraDays
 - **POST /Return** : {name, title} -> Success

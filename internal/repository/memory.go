@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"e-library/models"
+	"e-library/internal/models"
 	"errors"
 	"sync"
 	"time"
@@ -35,7 +35,7 @@ func (m *MemoryRepo) GetBook(title string) (*models.BookDetail, error) {
 	return book, nil
 }
 
-func (m *MemoryRepo) BorrowBook(name, title string) (*models.LoanDetail, error) {
+func (m *MemoryRepo) BorrowBook(name, title string, days int) (*models.LoanDetail, error) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -52,13 +52,13 @@ func (m *MemoryRepo) BorrowBook(name, title string) (*models.LoanDetail, error) 
 		NameOfBorrower: name,
 		BookTitle:      title,
 		LoanDate:       time.Now(),
-		ReturnDate:     time.Now().AddDate(0, 0, 28), // 4 weeks
+		ReturnDate:     time.Now().AddDate(0, 0, days), // 4 weeks
 	}
 	m.Loans[title] = append(m.Loans[title], loan)
 	return &loan, nil
 }
 
-func (m *MemoryRepo) ExtendLoan(name, title string) (*models.LoanDetail, error) {
+func (m *MemoryRepo) ExtendLoan(name, title string, extrDays int) (*models.LoanDetail, error) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -69,7 +69,7 @@ func (m *MemoryRepo) ExtendLoan(name, title string) (*models.LoanDetail, error) 
 
 	for i, l := range loans {
 		if l.NameOfBorrower == name {
-			m.Loans[title][i].ReturnDate = l.ReturnDate.AddDate(0, 0, 21) // +3 weeks
+			m.Loans[title][i].ReturnDate = l.ReturnDate.AddDate(0, 0, extrDays)
 			return &m.Loans[title][i], nil
 		}
 	}

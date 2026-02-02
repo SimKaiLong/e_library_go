@@ -1,9 +1,10 @@
 package main
 
 import (
-	"e-library/handlers"
-	"e-library/middleware"
-	"e-library/repository"
+	"e-library/internal/handlers"
+	"e-library/internal/middleware"
+	"e-library/internal/repository"
+	"e-library/internal/service"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -19,15 +20,16 @@ func main() {
 	r.Use(middleware.StructuredLogger())
 	r.Use(gin.Recovery())
 
-	// Repository Strategy Pattern
+	// Service Pattern
 	// DEFAULT: MemoryRepo for instant testing
 	repo := repository.NewMemoryRepo()
+	svc := service.NewLibraryService(repo)
 
 	// UNCOMMENT FOR POSTGRES:
 	// db, _ := sql.Open("postgres", "host=localhost user=user password=pass dbname=lib sslmode=disable")
 	// repo := repository.NewPostgresRepo(db)
 
-	h := &handlers.LibraryHandler{Repo: repo}
+	h := &handlers.LibraryHandler{Service: svc}
 
 	// Endpoints
 	r.GET("/Book", h.GetBook)

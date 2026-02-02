@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
+	"e-library/internal/handlers"
+	"e-library/internal/repository"
+	"e-library/internal/service"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"e-library/handlers"
-	"e-library/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,8 @@ func setupTestRouter() (*gin.Engine, *repository.MemoryRepo) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	repo := repository.NewMemoryRepo()
-	h := &handlers.LibraryHandler{Repo: repo}
+	svc := service.NewLibraryService(repo)
+	h := &handlers.LibraryHandler{Service: svc}
 
 	r.GET("/Book", h.GetBook)
 	r.POST("/Borrow", h.BorrowBook)
@@ -130,7 +131,7 @@ func TestExtendLoan_Scenarios(t *testing.T) {
 
 	t.Run("Success - Extend Existing Loan", func(t *testing.T) {
 		// Manually inject a loan to test extension
-		repo.BorrowBook("Alice", "Clean Code")
+		repo.BorrowBook("Alice", "Clean Code", 28)
 		initialReturnDate := repo.Loans["Clean Code"][0].ReturnDate
 
 		w := httptest.NewRecorder()
@@ -158,7 +159,7 @@ func TestReturnBook_Scenarios(t *testing.T) {
 	router, repo := setupTestRouter()
 
 	t.Run("Success - Return Book", func(t *testing.T) {
-		repo.BorrowBook("Alice", "Clean Code")
+		repo.BorrowBook("Alice", "Clean Code", 28)
 		beforeReturn, _ := repo.GetBook("Clean Code")
 		initialCopies := beforeReturn.AvailableCopies // is 1
 

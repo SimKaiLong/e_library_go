@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"e-library/models"
 	"e-library/repository"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type LibraryHandler struct {
@@ -25,15 +27,12 @@ func (h *LibraryHandler) GetBook(c *gin.Context) {
 }
 
 func (h *LibraryHandler) BorrowBook(c *gin.Context) {
-	var input struct {
-		Name  string `json:"name" binding:"required"`
-		Title string `json:"title" binding:"required"`
-	}
+	var input models.LoanDetail
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	loan, err := h.Repo.BorrowBook(input.Name, input.Title)
+	loan, err := h.Repo.BorrowBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -42,15 +41,12 @@ func (h *LibraryHandler) BorrowBook(c *gin.Context) {
 }
 
 func (h *LibraryHandler) ExtendLoan(c *gin.Context) {
-	var input struct {
-		Name  string `json:"name" binding:"required"`
-		Title string `json:"title" binding:"required"`
-	}
+	var input models.LoanDetail
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	loan, err := h.Repo.ExtendLoan(input.Name, input.Title)
+	loan, err := h.Repo.ExtendLoan(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -59,15 +55,12 @@ func (h *LibraryHandler) ExtendLoan(c *gin.Context) {
 }
 
 func (h *LibraryHandler) ReturnBook(c *gin.Context) {
-	var input struct {
-		Name  string `json:"name" binding:"required"`
-		Title string `json:"title" binding:"required"`
-	}
+	var input models.LoanDetail
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := h.Repo.ReturnBook(input.Name, input.Title)
+	err := h.Repo.ReturnBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

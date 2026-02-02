@@ -12,6 +12,16 @@ type LibraryHandler struct {
 	Repo repository.LibraryRepository
 }
 
+// Create a private helper to handle the repetitive request binding logic
+func (h *LibraryHandler) bindRequest(c *gin.Context) (*models.LoanDetail, bool) {
+	var input models.LoanDetail
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return nil, false
+	}
+	return &input, true
+}
+
 func (h *LibraryHandler) GetBook(c *gin.Context) {
 	title := c.Query("title")
 	if title == "" {
@@ -27,11 +37,11 @@ func (h *LibraryHandler) GetBook(c *gin.Context) {
 }
 
 func (h *LibraryHandler) BorrowBook(c *gin.Context) {
-	var input models.LoanDetail
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input, ok := h.bindRequest(c)
+	if !ok {
 		return
 	}
+
 	loan, err := h.Repo.BorrowBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
@@ -41,11 +51,11 @@ func (h *LibraryHandler) BorrowBook(c *gin.Context) {
 }
 
 func (h *LibraryHandler) ExtendLoan(c *gin.Context) {
-	var input models.LoanDetail
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input, ok := h.bindRequest(c)
+	if !ok {
 		return
 	}
+
 	loan, err := h.Repo.ExtendLoan(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -55,11 +65,11 @@ func (h *LibraryHandler) ExtendLoan(c *gin.Context) {
 }
 
 func (h *LibraryHandler) ReturnBook(c *gin.Context) {
-	var input models.LoanDetail
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input, ok := h.bindRequest(c)
+	if !ok {
 		return
 	}
+
 	err := h.Repo.ReturnBook(input.NameOfBorrower, input.BookTitle)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

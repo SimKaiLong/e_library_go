@@ -86,14 +86,18 @@ To use PostgreSQL as your storage backend:
 1. **Start PostgreSQL**: Ensure your local PostgreSQL server is running.
 
 2. **Create Database and User**:
-   > **Note**: Replace `<password>` with a strong password of your choice.
+   > Run the following as a PostgreSQL superuser (e.g., role `postgres`). Replace `<password>` with a strong password of your choice.
    ```sql
    CREATE USER e_library_user WITH PASSWORD '<password>';
    CREATE DATABASE e_library_db OWNER e_library_user;
    ```
 
 3. **Initialize Schema**:
-   Connect to `e_library_db` and run the following commands:
+   Connect to `e_library_db` as the application user to ensure proper permissions:
+   ```bash
+   psql -h localhost -U e_library_user -d e_library_db
+   ```
+   Then run the following commands:
    ```sql
    CREATE TABLE books (
        title TEXT PRIMARY KEY,

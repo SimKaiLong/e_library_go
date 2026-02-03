@@ -133,12 +133,16 @@ func TestExtendLoan_Scenarios(t *testing.T) {
 
 	t.Run("Success - Extend Existing Loan", func(t *testing.T) {
 		// Manually inject a loan to test extension
-		repo.BorrowBook(&models.LoanDetail{
+		now := time.Now()
+		_, err := repo.BorrowBook(&models.LoanDetail{
 			NameOfBorrower: "Alice",
 			BookTitle:      "Clean Code",
-			LoanDate:       time.Now(),
-			ReturnDate:     time.Now().AddDate(0, 0, 28),
+			LoanDate:       now,
+			ReturnDate:     now.AddDate(0, 0, 28),
 		})
+		if err != nil {
+			t.Fatalf("Failed to setup test: %v", err)
+		}
 		initialReturnDate := repo.Loans["Clean Code"][0].ReturnDate
 
 		w := httptest.NewRecorder()
@@ -147,8 +151,10 @@ func TestExtendLoan_Scenarios(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		// Verify logic: should be exactly 21 days after initial return date
-		assert.True(t, repo.Loans["Clean Code"][0].ReturnDate.After(initialReturnDate))
+		// Verify logic: should be exactly 21 days after the initial return date
+		expectedReturnDate := initialReturnDate.AddDate(0, 0, 21)
+		actualReturnDate := repo.Loans["Clean Code"][0].ReturnDate
+		assert.Equal(t, expectedReturnDate.Format(time.RFC3339), actualReturnDate.Format(time.RFC3339))
 	})
 
 	t.Run("Error - Loan Record Not Found", func(t *testing.T) {
@@ -166,12 +172,16 @@ func TestReturnBook_Scenarios(t *testing.T) {
 	router, repo := setupTestRouter()
 
 	t.Run("Success - Return Book", func(t *testing.T) {
-		repo.BorrowBook(&models.LoanDetail{
+		now := time.Now()
+		_, err := repo.BorrowBook(&models.LoanDetail{
 			NameOfBorrower: "Alice",
 			BookTitle:      "Clean Code",
-			LoanDate:       time.Now(),
-			ReturnDate:     time.Now().AddDate(0, 0, 28),
+			LoanDate:       now,
+			ReturnDate:     now.AddDate(0, 0, 28),
 		})
+		if err != nil {
+			t.Fatalf("Failed to setup test: %v", err)
+		}
 		beforeReturn, _ := repo.GetBook("Clean Code")
 		initialCopies := beforeReturn.AvailableCopies // is 1
 

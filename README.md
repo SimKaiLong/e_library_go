@@ -79,6 +79,49 @@ This project provides a way to manage a library's books and loans through a web 
    go test -v ./...
    ```
 
+## PostgreSQL Local Setup
+
+To use PostgreSQL as your storage backend:
+
+1. **Start PostgreSQL**: Ensure your local PostgreSQL server is running.
+
+2. **Create Database and User**:
+   > **Note**: Replace `<password>` with a strong password of your choice.
+   ```sql
+   CREATE USER e_library_user WITH PASSWORD '<password>';
+   CREATE DATABASE e_library_db OWNER e_library_user;
+   ```
+
+3. **Initialize Schema**:
+   Connect to `e_library_db` and run the following commands:
+   ```sql
+   CREATE TABLE books (
+       title TEXT PRIMARY KEY,
+       available_copies INT NOT NULL CHECK (available_copies >= 0)
+   );
+
+   CREATE TABLE loans (
+       borrower TEXT NOT NULL,
+       title TEXT NOT NULL REFERENCES books(title),
+       loan_date TIMESTAMP NOT NULL,
+       return_date TIMESTAMP NOT NULL,
+       PRIMARY KEY (borrower, title)
+   );
+
+   -- Seed initial data
+   INSERT INTO books (title, available_copies) VALUES 
+   ('The Go Programming Language', 5),
+   ('Clean Code', 2),
+   ('Design Patterns', 1);
+   ```
+
+4. **Update Environment Settings**:
+   In your `.env` file, change the following:
+   ```env
+   DB_TYPE=postgres
+   DATABASE_URL=host=localhost user=e_library_user password=<password> dbname=e_library_db sslmode=disable
+   ```
+
 ## Configuration
 
 The system uses environment settings. These can be placed in a `.env` file for local use.
@@ -87,7 +130,7 @@ The system uses environment settings. These can be placed in a `.env` file for l
 | :--- | :--- | :--- |
 | `PORT` | The port the system uses | `3000` |
 | `DB_TYPE` | Where to store data (`memory` or `postgres`) | `memory` |
-| `DATABASE_URL` | Database connection details | `host=localhost user=user password=pass dbname=lib sslmode=disable` |
+| `DATABASE_URL` | Database connection details | `host=localhost user=user password=<password> dbname=lib sslmode=disable` |
 | `APP_ENV` | Mode (`development` or `production`) | `development` |
 
 ## How to use the API

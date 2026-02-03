@@ -59,6 +59,15 @@ func (p *PostgresRepo) BorrowBook(loan *models.LoanDetail) (*models.LoanDetail, 
 		return nil, errors.ErrNoCopies
 	}
 
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM loans WHERE borrower = $1 AND title = $2)", loan.NameOfBorrower, loan.BookTitle).Scan(&exists)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errors.ErrDuplicateLoan
+	}
+
 	if _, err = tx.Exec("UPDATE books SET available_copies = available_copies - 1 WHERE title = $1", loan.BookTitle); err != nil {
 		return nil, err
 	}

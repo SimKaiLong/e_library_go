@@ -134,6 +134,21 @@ func TestBorrowBook_Scenarios(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
+
+	t.Run("Error - Duplicate Loan", func(t *testing.T) {
+		// First borrow
+		body, _ := json.Marshal(map[string]string{"name_of_borrower": "Alice", "book_title": "The Go Programming Language"})
+		w1 := httptest.NewRecorder()
+		req1, _ := http.NewRequest("POST", "/Borrow", bytes.NewBuffer(body))
+		router.ServeHTTP(w1, req1)
+		assert.Equal(t, http.StatusCreated, w1.Code)
+
+		// Second borrow (same person, same book)
+		w2 := httptest.NewRecorder()
+		req2, _ := http.NewRequest("POST", "/Borrow", bytes.NewBuffer(body))
+		router.ServeHTTP(w2, req2)
+		assert.Equal(t, http.StatusConflict, w2.Code)
+	})
 }
 
 // --- POST /Extend Tests ---

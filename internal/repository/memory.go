@@ -64,6 +64,12 @@ func (m *MemoryRepo) BorrowBook(loan *models.LoanDetail) (*models.LoanDetail, er
 		return nil, errors.ErrNoCopies
 	}
 
+	for _, l := range m.Loans[loan.BookTitle] {
+		if l.NameOfBorrower == loan.NameOfBorrower {
+			return nil, errors.ErrDuplicateLoan
+		}
+	}
+
 	book.AvailableCopies--
 	m.Loans[loan.BookTitle] = append(m.Loans[loan.BookTitle], *loan)
 	return loan, nil

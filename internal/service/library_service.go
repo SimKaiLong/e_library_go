@@ -5,7 +5,15 @@ import (
 	"e-library-api/internal/repository"
 )
 
-// LibraryService handles business logic such as 4 weeks duration for books borrowed and 3 weeks extension
+// LibraryServiceInterface defines the behaviors for the library service.
+type LibraryServiceInterface interface {
+	GetBook(title string) (*models.BookDetail, error)
+	BorrowBook(name, title string) (*models.LoanDetail, error)
+	ExtendLoan(name, title string) (*models.LoanDetail, error)
+	ReturnBook(name, title string) error
+}
+
+// LibraryService handles business logic such as 4-week duration for books borrowed and 3-week extension
 type LibraryService struct {
 	Repo repository.LibraryRepository
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type LibraryHandler struct {
-	Service *service.LibraryService
+	Service service.LibraryServiceInterface
 }
 
 // Create a private helper to handle the repetitive request binding logic
